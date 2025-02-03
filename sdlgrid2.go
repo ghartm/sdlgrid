@@ -33,6 +33,7 @@ import (
 
 //
 // apt install libsdl2{,-image,-mixer,-ttf,-gfx}-dev
+// go get -v github.com/veandco/go-sdl2/sdl@master
 // go get -v github.com/veandco/go-sdl2/{sdl,img,mix,ttf}
 
 // ----------------------------------------------------------------
@@ -157,7 +158,7 @@ func newTestWindow(win *RootWindow) *ItemWindow {
 	b1.SetText("set color")
 	b1.SetCallback(func() {
 		ncs := new(ColorScheme)
-		ncs.SetBaseColor(&sdl.Color{uint8(lr.GetNumber()), uint8(lg.GetNumber()), uint8(lb.GetNumber()), 255})
+		ncs.SetBaseColor(&sdl.Color{R: uint8(lr.GetNumber()), G: uint8(lg.GetNumber()), B: uint8(lb.GetNumber()), A: 255})
 		win1.oWithItems(func(i Item) {
 			i.SetColorScheme(ncs)
 			i.SetChanged(true)
@@ -231,7 +232,7 @@ func eventSenderCustom(wg *sync.WaitGroup, c chan interface{}, ctrl chan bool) {
 	for running {
 		select {
 		case _, running = <-ctrl:
-			fmt.Println("quitting eventSenderCustom\n")
+			fmt.Println("quitting eventSenderCustom")
 			wg.Done()
 		case c <- &e:
 			time.Sleep(time.Duration(1000) * time.Millisecond)
@@ -267,7 +268,7 @@ type EventCustom struct {
 	round int
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 type infraItemList struct {
 	items []Item
 }
@@ -284,7 +285,7 @@ func (i *infraItemList) CheckTopDown(x, y int32) (Item, bool) {
 	return nil, false
 }
 func (i *infraItemList) ClearList(s Item) {
-	for n, _ := range i.items {
+	for n := range i.items {
 		i.items[n] = nil
 	}
 	i.items = i.items[:0] // cutt off
@@ -375,7 +376,7 @@ func (i *infraItemList) ShiftBottom(s Item) {
 
 //--------------------------------------------------------------------
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 // TODO: "register Callback" functionality (button, motion)
 type Item interface {
 	Report(int)
@@ -405,7 +406,7 @@ type Item interface {
 	// implemented by ItemBase and may be by specific Item
 
 	oNotifyMouseMotion(x, y, dx, dy int32)
-	oNotifyMouseButton(x int32, y int32, button uint8, state uint8) // state:0=released 1=pressed
+	oNotifyMouseButton(x int32, y int32, button sdl.Button, state sdl.ButtonState) // state:0=released 1=pressed
 	oNotifyMouseFocusGained()
 	oNotifyMouseFocusLost()
 	oNotifyKbFocusGained()
@@ -450,7 +451,7 @@ type Item interface {
 	GetParent() Item
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 // the commons of every item
 type ItemBase struct {
 	name        string
@@ -505,7 +506,7 @@ func (i *ItemBase) oReportSubitems(lvl int) {
 	fmt.Printf("%s: no subitems\n", i.name)
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 func (i *ItemBase) GetColorScheme() *ColorScheme {
 	// fine if it is set
 	var cs *ColorScheme
@@ -585,12 +586,12 @@ func (i *ItemBase) setRootWindow(rw *RootWindow) {
 }
 
 // checks if the position xy is located at the item
-//func (i CommonItem) checkPos(r *sdl.Rect) bool {	return i.frame.HasIntersection(r)}
+// func (i CommonItem) checkPos(r *sdl.Rect) bool {	return i.frame.HasIntersection(r)}
 func (i *ItemBase) CheckPos(x, y int32) bool {
 	return (i.iframe.X <= x) && (x < i.iframe.X+i.iframe.W) && (i.iframe.Y <= y) && (y < i.iframe.Y+i.iframe.H)
 }
 
-//gets the normalized percentage
+// gets the normalized percentage
 func utilNormPct(base, pct int32) int32 {
 	r := int32((100000.0 / float32(base)) * float32(pct))
 	if r > 100000 {
@@ -599,7 +600,7 @@ func utilNormPct(base, pct int32) int32 {
 	return r
 }
 
-//gets the percentage of fraction from base
+// gets the percentage of fraction from base
 func utilGetPct(base, fraction int32) int32 {
 	r := int32(((float32(fraction) / float32(base)) * 100000.0))
 	if r > 100000 {
@@ -608,7 +609,7 @@ func utilGetPct(base, fraction int32) int32 {
 	return r
 }
 
-//gets pct percent of base
+// gets pct percent of base
 func utilPct(base, pct int32) int32 {
 	r := int32((float32(base) * (float32(pct) / 100000.0)) + 0.5)
 	if r > base {
@@ -695,7 +696,7 @@ func (i *ItemBase) oNotifyMouseMotion(x, y, dx, dy int32) {
 }
 
 // Button events will be reported via this function. if they are relevan tfor this item
-func (i *ItemBase) oNotifyMouseButton(x, y int32, button, state uint8) {
+func (i *ItemBase) oNotifyMouseButton(x, y int32, button sdl.Button, state sdl.ButtonState) {
 	fmt.Printf("ItemBase: %s.oNotifyMouseButton(%d,%d,%d,%d)\n", i.name, x, y, button, state)
 }
 
@@ -727,7 +728,7 @@ func (i *ItemBase) GetItemByPos(x, y int32, e sdl.Event) (bool, Item) {
 // item needs to handle the layout for all its subitems
 //func (i *ItemBase) cbLayoutSubItems() {}
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 // Container item that manages/arranges its subitems in a grid. It has no decoration
 type ItemGrid struct {
 	ItemBase
@@ -739,7 +740,7 @@ type ItemGrid struct {
 	colSpec             []layoutParam
 	lastFoundSubItemCol int
 	lastFoundSubItemRow int
-	buttonCallback      func(int32, int32, uint8, uint8) //x, y int32, button, state uint8
+	buttonCallback      func(int32, int32, sdl.Button, sdl.ButtonState) //x, y int32, button, state uint8
 }
 
 func NewItemGrid(win *RootWindow, cols int, rows int) *ItemGrid {
@@ -780,10 +781,10 @@ func NewItemGrid(win *RootWindow, cols int, rows int) *ItemGrid {
 	return i
 }
 
-func (i *ItemGrid) SetButtonCallback(cb func(int32, int32, uint8, uint8)) {
+func (i *ItemGrid) SetButtonCallback(cb func(int32, int32, sdl.Button, sdl.ButtonState)) {
 	i.buttonCallback = cb
 }
-func (i *ItemGrid) oNotifyMouseButton(x, y int32, button, state uint8) {
+func (i *ItemGrid) oNotifyMouseButton(x, y int32, button sdl.Button, state sdl.ButtonState) {
 	fmt.Printf("%s: ItemGrid.oNotifyMouseButton()\n", i.GetName())
 	if i.buttonCallback != nil {
 		i.buttonCallback(x, y, button, state)
@@ -819,7 +820,7 @@ func (i *ItemGrid) AppendRow() int {
 		//if it was the first column a row was added as well
 	} else {
 
-		for n, _ := range i.grid {
+		for n := range i.grid {
 			i.grid[n] = append(i.grid[n], nil)
 		}
 		i.rowSpec = append(i.rowSpec, layoutParam{LS_SIZE_PCT, 100000})
@@ -1276,7 +1277,7 @@ func (i *ItemFrame) oRender() {
 	}
 }
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 type ItemSlider struct {
 	ItemBase
 	upLeftCb        func()
@@ -1458,7 +1459,7 @@ func (i *ItemSlider) oFindSubItem(x, y int32, e sdl.Event) (bool, Item) {
 
 //-----------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 type ItemBackground struct {
 	ItemBase
 	subItem Item
@@ -1527,7 +1528,7 @@ func (i *ItemBackground) oFindSubItem(x, y int32, e sdl.Event) (bool, Item) {
 	return false, nil
 }
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 type ItemButton struct {
 	ItemBase
 	buttonState bool   // false=unpressed true=pressed
@@ -1691,7 +1692,7 @@ func (i *ItemButton) SetButtonState(s bool) {
 
 }
 
-func (i *ItemButton) oNotifyMouseButton(x, y int32, button, state uint8) {
+func (i *ItemButton) oNotifyMouseButton(x, y int32, button sdl.Button, state sdl.ButtonState) {
 	fmt.Printf("%s: ItemButton.oNotifyMouseButton()\n", i.GetName())
 	if button == 1 {
 		switch state {
@@ -1723,7 +1724,7 @@ func (i *ItemButton) oNotifyMouseButton(x, y int32, button, state uint8) {
 	i.SetChanged(true)
 }
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // area that can be picked and dragged by mouse to move a specific Target item. Initially itself.
 type ItemHandle struct {
 	ItemBase
@@ -1810,7 +1811,7 @@ func (i *ItemHandle) pick(b bool) {
 	}
 }
 
-func (i *ItemHandle) oNotifyMouseButton(x, y int32, button, state uint8) {
+func (i *ItemHandle) oNotifyMouseButton(x, y int32, button sdl.Button, state sdl.ButtonState) {
 	fmt.Printf("%s: ItemHandle.oNotifyMouseButton()\n", i.GetName())
 	if button == 1 {
 		switch state {
@@ -1834,7 +1835,7 @@ func (i *ItemHandle) oRender() {
 	switch i.handleStyle {
 	case ITEM_HANDLE_STYLE_DARKEDGE:
 		r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
-		utilRendererSetDrawColor(r, &sdl.Color{0, 0, 0, 30})
+		utilRendererSetDrawColor(r, &sdl.Color{R: 0, G: 0, B: 0, A: 30})
 		//r.FillRect(&i.iframe)
 		r.DrawRect(&i.iframe)
 	case ITEM_HANDLE_STYLE_FLAT:
@@ -1847,7 +1848,7 @@ func (i *ItemHandle) oRender() {
 
 }
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Display a text
 type ItemText struct {
 	ItemBase
@@ -2218,7 +2219,7 @@ func (i *ItemTextInput) computeCursorPositions() {
 	}
 
 	//record positions between each rune. 0=pos1 l+1=end
-	for n, _ := range i.text {
+	for n := range i.text {
 		i.cursorPosition[n] = i.style.GetTextLen(string(i.text[:n]))
 	}
 	i.cursorPosition[l] = i.style.GetTextLen(string(i.text[:]))
@@ -2321,7 +2322,7 @@ func (i *ItemTextInput) oNotifyMouseMotion(x, y, dx, dy int32) {
 	fmt.Printf("ItemTextInput: %s.NotifyMouseMotion(%d,%d,%d,%d)\n", i.name, x, y, dx, dy)
 }
 
-func (i *ItemTextInput) oNotifyMouseButton(x, y int32, button, state uint8) {
+func (i *ItemTextInput) oNotifyMouseButton(x, y int32, button sdl.Button, state sdl.ButtonState) {
 	fmt.Printf("ItemTextInput: %s.NotifyMouseButton(%d,%d,%d,%d)\n", i.name, x, y, button, state)
 
 	if button == 1 {
@@ -2591,7 +2592,7 @@ queuereader:
 				}
 			}
 		case *EventCustom:
-			fmt.Println("Custom event!\n")
+			fmt.Println("Custom event!")
 		case *sdl.QuitEvent:
 			close(wc.ctrl)
 			break queuereader
@@ -2653,7 +2654,7 @@ queuereader:
 	sdl.Quit()
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 type layoutParam struct {
 	S int32
 	V int32
@@ -2665,7 +2666,7 @@ type layoutSpec struct {
 	H layoutParam
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 type ItemWindowManager struct {
 	ItemLayerBox
 }
@@ -2721,7 +2722,7 @@ func (i *ItemWindowManager) oFindSubItem(x, y int32, e sdl.Event) (found bool, i
 	return false, nil
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 // ItemBackground is a background whith a subitem
 type ItemWindow struct {
 	ItemBase
@@ -2749,8 +2750,7 @@ func NewItemWindow(win *RootWindow) *ItemWindow {
 	i.handleGrid.SetName("handleGrid")
 	i.handleGrid.SetSpec(LS_POS_ABS, LS_POS_ABS, LS_SIZE_PCT, LS_SIZE_PCT, 0, 0, 100000, 100000)
 
-	var hdim int32
-	hdim = 10
+	var hdim int32 = 10
 
 	setHandleParam := func(h *ItemHandle, name string, p Item, cb func(int32, int32)) *ItemHandle {
 		h.SetName(name)
@@ -2983,13 +2983,13 @@ func (i *ItemWindow) oFindSubItem(x, y int32, e sdl.Event) (bool, Item) {
 
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 // ItemLayerBox is designed manage layered items
 // all items share the same frame
 type ItemLayerBox struct {
 	ItemBase
 	subItems       infraItemList
-	buttonCallback func(int32, int32, uint8, uint8) //x, y int32, button, state uint8
+	buttonCallback func(int32, int32, sdl.Button, sdl.ButtonState) //x, y int32, button sdl.Button, state sdl.ButtonState
 	//spacing        int32
 }
 
@@ -3001,10 +3001,10 @@ func NewItemLayerBox(win *RootWindow) *ItemLayerBox {
 	return i
 }
 
-func (i *ItemLayerBox) SetButtonCallback(cb func(int32, int32, uint8, uint8)) {
+func (i *ItemLayerBox) SetButtonCallback(cb func(int32, int32, sdl.Button, sdl.ButtonState)) {
 	i.buttonCallback = cb
 }
-func (i *ItemLayerBox) oNotifyMouseButton(x, y int32, button, state uint8) {
+func (i *ItemLayerBox) oNotifyMouseButton(x, y int32, button sdl.Button, state sdl.ButtonState) {
 	if i.buttonCallback != nil {
 		i.buttonCallback(x, y, button, state)
 	}
@@ -3115,7 +3115,7 @@ func (i *ItemLayerBox) oGetMinSize() (int32, int32) {
 	return i.minw, i.minh
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 // menue entry can be a submenu or action
 type ItemMenuEntry struct {
 	ItemButton
@@ -3172,7 +3172,7 @@ func (i *ItemMenuEntry) SetParentMenu(s *ItemMenu) {
 	i.parentMenue = s
 }
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 // Container holding MenueEntries vertical or horizontal composed of Grid
 type ItemMenu struct {
 	ItemGrid
@@ -3223,7 +3223,7 @@ func (i *ItemMenu) CloseSubMenu() {
 	i.win.SetChanged(true)
 }
 
-func (i *ItemMenu) layerButtonCb(x, y int32, button, state uint8) {
+func (i *ItemMenu) layerButtonCb(x, y int32, button sdl.Button, state sdl.ButtonState) {
 	fmt.Printf("%s: ItemMenu.layerButtonCb()\n", i.GetName())
 	if state == 1 {
 		// only on button down events
@@ -3300,7 +3300,7 @@ func (i *ItemMenu) AddNewMenuEntry(text string, sub *ItemMenu, cb func()) {
 
 //--------------------------------------------------------------------
 
-//--------------------------------------------------------------------
+// --------------------------------------------------------------------
 type RootWindow struct {
 	id             uint32
 	title          string
@@ -3460,7 +3460,7 @@ func (w *RootWindow) Destroy() {
 }
 func (w *RootWindow) GetFrame() *sdl.Rect {
 	b, h := w.Window.GetSize()
-	return &sdl.Rect{0, 0, b, h}
+	return &sdl.Rect{X: 0, Y: 0, W: b, H: h}
 }
 
 func (w *RootWindow) RenderAll() {
@@ -3590,7 +3590,7 @@ func (w *RootWindow) handleWindowEvent(t *sdl.WindowEvent) {
 	case sdl.WINDOWEVENT_HIT_TEST:
 		fmt.Printf("Window %d has a special hit test\n", t.WindowID)
 	default:
-		fmt.Printf("[%d ms] Window %d unknown Window event\twid:%d\tevent:%d\n", t.Timestamp, t.WindowID, t.Event)
+		fmt.Printf("[%d ms] unknown Window event\twid:%d\tevent:%d\n", t.Timestamp, t.WindowID, t.Event)
 	}
 }
 
@@ -3707,7 +3707,7 @@ func (i *ItemBase) GetFramePos() (x, y int32)  { return i.iframe.X, i.iframe.Y }
 func (i *ItemBase) GetFrameSize() (w, h int32) { return i.iframe.W, i.iframe.H }
 func (i *ItemBase) MakeInnerFrame(mgn int32) *sdl.Rect {
 
-	return &sdl.Rect{i.iframe.X + mgn, i.iframe.Y + mgn, i.iframe.W - (mgn * 2), i.iframe.H - (mgn * 2)}
+	return &sdl.Rect{X: i.iframe.X + mgn, Y: i.iframe.Y + mgn, W: i.iframe.W - (mgn * 2), H: i.iframe.H - (mgn * 2)}
 }
 
 func (i *ItemBase) Layout(pf *sdl.Rect, sizeChanged bool) {
@@ -4061,7 +4061,7 @@ func (i *ItemBase) Move(dx, dy int32) (int32, int32) {
 
 }
 
-//-----------------------------------------------------------
+// -----------------------------------------------------------
 type ColorScheme struct {
 	base        sdl.Color
 	baseDark    sdl.Color
@@ -4141,21 +4141,22 @@ func NewStyle(n string) *Style {
 func (s *Style) InitDefault() {
 	s.cursorBlinkRate = 300
 	//red := &sdl.Color{255, 0, 0, 255}
-	s.colorRed = &sdl.Color{255, 50, 50, 255}
-	s.colorGreen = &sdl.Color{5, 200, 5, 255}
-	s.colorBlue = &sdl.Color{50, 50, 255, 255}
-	s.colorPurple = &sdl.Color{255, 50, 255, 255}
-	s.colorBlack = &sdl.Color{0, 0, 0, 255}
-	s.colorWhite = &sdl.Color{255, 255, 255, 255}
+	// R, G, B, A
+	s.colorRed = &sdl.Color{R: 255, G: 50, B: 50, A: 255}
+	s.colorGreen = &sdl.Color{R: 5, G: 200, B: 5, A: 255}
+	s.colorBlue = &sdl.Color{R: 50, G: 50, B: 255, A: 255}
+	s.colorPurple = &sdl.Color{R: 255, G: 50, B: 255, A: 255}
+	s.colorBlack = &sdl.Color{R: 0, G: 0, B: 0, A: 255}
+	s.colorWhite = &sdl.Color{R: 255, G: 255, B: 255, A: 255}
 
 	//standard item
 	s.csDefault = new(ColorScheme)
 	//s.csDefault.SetBaseColor(&sdl.Color{70, 100, 100, 255}, 50)
-	s.csDefault.SetBaseColor(&sdl.Color{190, 190, 190, 255})
+	s.csDefault.SetBaseColor(&sdl.Color{R: 190, G: 190, B: 190, A: 255})
 
 	// Windows colors
 	s.csWindow = new(ColorScheme)
-	s.csWindow.SetBaseColor(&sdl.Color{150, 200, 150, 255})
+	s.csWindow.SetBaseColor(&sdl.Color{R: 150, G: 200, B: 150, A: 255})
 
 	s.decoUnit = 16
 	// spacing shall not drop below 2 !
@@ -4227,7 +4228,7 @@ func utilSizeMax(w1, h1, w2, h2 int32) (w, h int32) {
 }
 
 func utilFrameCpyMoved(src *sdl.Rect, x, y int32) (dst *sdl.Rect) {
-	return &sdl.Rect{src.X + x, src.Y + y, src.W, src.H}
+	return &sdl.Rect{X: src.X + x, Y: src.Y + y, W: src.W, H: src.H}
 }
 
 func utilRendererSetDrawColor(r *sdl.Renderer, c *sdl.Color) {
@@ -4261,8 +4262,7 @@ func utilRenderText(rd *sdl.Renderer, f *ttf.Font, t string, r *sdl.Rect, c *sdl
 	//SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
 
 	// center target rect
-	var tr sdl.Rect
-	tr = *r
+	var tr sdl.Rect = *r
 	tr.W = sfc.W
 	tr.H = sfc.H
 	tr.X += (r.W - sfc.W) / 2
@@ -4373,7 +4373,7 @@ func utilRenderShadowBorder(rd *sdl.Renderer, r *sdl.Rect, bc *ColorScheme, sunk
 
 func utilColorMix(a *sdl.Color, b *sdl.Color) *sdl.Color {
 	//average of every color channel
-	return &sdl.Color{uint8((uint32(a.R) + uint32(b.R)) >> 1), uint8((uint32(a.G) + uint32(b.G)) >> 1), uint8((uint32(a.B) + uint32(b.B)) >> 1), uint8((uint32(a.A) + uint32(b.A)) >> 1)}
+	return &sdl.Color{R: uint8((uint32(a.R) + uint32(b.R)) >> 1), G: uint8((uint32(a.G) + uint32(b.G)) >> 1), B: uint8((uint32(a.B) + uint32(b.B)) >> 1), A: uint8((uint32(a.A) + uint32(b.A)) >> 1)}
 }
 
 func utilColorDim(c *sdl.Color, pct int) *sdl.Color {
@@ -4399,7 +4399,7 @@ func utilColorDim(c *sdl.Color, pct int) *sdl.Color {
 		b = (255 - uint8(float32(255-b)*p)) & 0xff
 	}
 
-	return &sdl.Color{r, g, b, c.A}
+	return &sdl.Color{R: r, G: g, B: b, A: c.A}
 }
 
 // Gets the visual brightness of a color. For color levels until about 130 use bright text - otherwise dark text
