@@ -113,7 +113,7 @@ func (i *ItemFrame) SetText(t string) *ItemFrame {
 		i.textBox = NewItemText(i.win)
 		i.textBox.SetParent(i)
 		i.textBox.SetName(i.name + ".textBox")
-		i.textBox.SetSpecX(LS_POS_ABS, i.textBox.GetStyle().spacing*2)
+		i.textBox.SetSpecX(LS_POS_ABS, i.textBox.GetStyle().Spacing*2)
 		i.textBox.UseBaseColor(true)
 	}
 	i.textBox.SetText(t)
@@ -121,7 +121,7 @@ func (i *ItemFrame) SetText(t string) *ItemFrame {
 }
 func (i *ItemFrame) getBorderValues() (t, r, b, l int32) {
 	// frame line
-	s := i.GetStyle().spacing
+	s := i.GetStyle().Spacing
 	r = s + 1
 	b = s + 1
 	l = s + 1
@@ -163,8 +163,8 @@ func (i *ItemFrame) oRender() {
 	c := i.GetColorScheme()
 	r.SetDrawBlendMode(sdl.BLENDMODE_NONE)
 
-	//utilRenderSolidBorder(r, &i.outerFrame, s.colorGreen)
-	//utilRenderSolidBorder(r, &i.outerFrame, i.GetStyle().colorGreen)
+	//utilRenderSolidBorder(r, &i.outerFrame, s.ColorGreen)
+	//utilRenderSolidBorder(r, &i.outerFrame, i.GetStyle().ColorGreen)
 
 	if i.textBox != nil {
 		//if there is a text, let a gap in the frame

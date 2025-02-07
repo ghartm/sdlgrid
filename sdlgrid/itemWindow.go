@@ -24,7 +24,7 @@ func NewItemWindow(win *RootWindow) *ItemWindow {
 	i.o = Item(i)
 	i.setRootWindow(win)
 	i.SetSpec(LS_POS_PCT, LS_POS_PCT, LS_SIZE_PCT, LS_SIZE_PCT, 0, 0, 100000, 100000)
-	i.colorScheme = win.style.csWindow
+	i.ColorScheme = win.Style.csWindow
 	i.SetName("NewWindow")
 
 	i.handleGrid = NewItemGrid(win, 3, 3)
@@ -76,26 +76,26 @@ func NewItemWindow(win *RootWindow) *ItemWindow {
 	sh.SetSpec(LS_POS_PCT, LS_POS_PCT, LS_SIZE_ABS, LS_SIZE_ABS, 0, 0, hdim, hdim)
 	i.handleGrid.SetSubItem(2, 2, sh)
 
-	i.handleGrid.SetColSpec(0, layoutParam{LS_SIZE_COLLAPSE, 0})
-	i.handleGrid.SetColSpec(1, layoutParam{LS_SIZE_PCT, 100000})
-	i.handleGrid.SetColSpec(2, layoutParam{LS_SIZE_COLLAPSE, 0})
-	i.handleGrid.SetRowSpec(0, layoutParam{LS_SIZE_COLLAPSE, 0})
-	i.handleGrid.SetRowSpec(1, layoutParam{LS_SIZE_PCT, 100000})
-	i.handleGrid.SetRowSpec(2, layoutParam{LS_SIZE_COLLAPSE, 0})
+	i.handleGrid.SetColSpec(0, LayoutParam{LS_SIZE_COLLAPSE, 0})
+	i.handleGrid.SetColSpec(1, LayoutParam{LS_SIZE_PCT, 100000})
+	i.handleGrid.SetColSpec(2, LayoutParam{LS_SIZE_COLLAPSE, 0})
+	i.handleGrid.SetRowSpec(0, LayoutParam{LS_SIZE_COLLAPSE, 0})
+	i.handleGrid.SetRowSpec(1, LayoutParam{LS_SIZE_PCT, 100000})
+	i.handleGrid.SetRowSpec(2, LayoutParam{LS_SIZE_COLLAPSE, 0})
 
 	// rootGrid separates Title and panel of window
 	i.rootGrid = NewItemGrid(win, 1, 2)
 	i.rootGrid.SetParent(i)
 	i.rootGrid.SetName("windowGrid")
-	i.rootGrid.SetSpacing(i.GetStyle().spacing)
+	i.rootGrid.SetSpacing(i.GetStyle().Spacing)
 
 	// titleGrid separates a laxerbox with text and handle from further buttons at the rigth
 	i.titleGrid = NewItemGrid(win, 4, 1)
 	i.rootGrid.SetSubItem(0, 0, i.titleGrid)
-	i.titleGrid.SetColSpec(0, layoutParam{LS_SIZE_PCT, 100000})
-	i.titleGrid.SetColSpec(1, layoutParam{LS_SIZE_COLLAPSE, 0})
-	i.titleGrid.SetColSpec(2, layoutParam{LS_SIZE_COLLAPSE, 0})
-	i.titleGrid.SetColSpec(3, layoutParam{LS_SIZE_COLLAPSE, 0})
+	i.titleGrid.SetColSpec(0, LayoutParam{LS_SIZE_PCT, 100000})
+	i.titleGrid.SetColSpec(1, LayoutParam{LS_SIZE_COLLAPSE, 0})
+	i.titleGrid.SetColSpec(2, LayoutParam{LS_SIZE_COLLAPSE, 0})
+	i.titleGrid.SetColSpec(3, LayoutParam{LS_SIZE_COLLAPSE, 0})
 	i.titleGrid.SetSpacing(2)
 	i.titleGrid.SetName("titleGrid")
 
@@ -235,12 +235,12 @@ func (i *ItemWindow) oNotifyPostLayout(sizeChanged bool) {
 }
 
 func (i *ItemWindow) oGetSubFrame() *sdl.Rect {
-	return i.MakeInnerFrame(i.GetStyle().spacing + 1)
+	return i.MakeInnerFrame(i.GetStyle().Spacing + 1)
 }
 
 func (i *ItemWindow) oGetMinSize() (int32, int32) {
 	w, h := i.rootGrid.oGetMinSize()
-	spc := (i.GetStyle().spacing + 1) * 2
+	spc := (i.GetStyle().Spacing + 1) * 2
 	return w + spc, h + spc
 }
 func (i *ItemWindow) oWithItems(fn func(Item)) {
@@ -263,4 +263,11 @@ func (i *ItemWindow) oFindSubItem(x, y int32, e sdl.Event) (bool, Item) {
 
 	return false, nil
 
+}
+
+func (i *ItemWindow) ChangeAllColourSchemes(scheme *ColorScheme) {
+	i.oWithItems(func(si Item) {
+		si.SetColorScheme(scheme)
+		si.SetChanged(true)
+	})
 }

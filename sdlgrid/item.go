@@ -34,6 +34,7 @@ type Item interface {
 	GetCollapsedSpec() (x, y, w, h int32)
 	SetState(s int)
 	SetHidden(bool)
+	GetHidden() bool
 
 	// implemented by ItemBase and may be by specific Item
 
@@ -89,14 +90,14 @@ type ItemBase struct {
 	name        string
 	o           Item         // self reference as Item interface - used as a workaround for "late bound fn". see the oXXXX stub functions
 	win         *RootWindow  // the root window the item is connected to
-	colorScheme *ColorScheme // colors used for rendering
-	style       *Style       // The style to be used on rendering if it is different from the window style
+	ColorScheme *ColorScheme // colors used for rendering
+	Style       *Style       // The style to be used on rendering if it is different from the window style
 	changed     bool         // true if the item needs to be refreshed on screen
 	parent      Item         // Parent item
 	state       int          // item State hidden/active/
 	hidden      bool
 
-	spec layoutSpec
+	spec LayoutSpec
 	//specx         sdl.Rect // spec relative to parent frame
 	//specval       sdl.Rect // spec values relative to parent frame
 	iframe        sdl.Rect // itemframe absolute positioning (computed by layout according to spec)
@@ -116,11 +117,9 @@ func (i *ItemBase) oWithItems(fn func(Item)) {
 }
 
 func (i *ItemBase) SetState(s int) { i.state = s }
-func (i *ItemBase) SetHidden(b bool) {
-	if i.hidden != b {
-		i.hidden = b
-	}
-}
+
+func (i *ItemBase) GetHidden() bool  { return i.hidden }
+func (i *ItemBase) SetHidden(b bool) { i.hidden = b }
 
 func (i *ItemBase) Report(lvl int) {
 	for n := 0; n < lvl; n++ {
@@ -143,8 +142,8 @@ func (i *ItemBase) GetColorScheme() *ColorScheme {
 	// fine if it is set
 	var cs *ColorScheme
 
-	if i.colorScheme != nil {
-		cs = i.colorScheme
+	if i.ColorScheme != nil {
+		cs = i.ColorScheme
 	} else {
 
 		// try to get it from the parent
@@ -154,14 +153,14 @@ func (i *ItemBase) GetColorScheme() *ColorScheme {
 			// no parent so take the default from the style
 			cs = i.GetStyle().csDefault
 		}
-		i.colorScheme = cs
+		i.ColorScheme = cs
 	}
 
 	return cs
 }
 
 func (i *ItemBase) SetColorScheme(cs *ColorScheme) {
-	i.colorScheme = cs
+	i.ColorScheme = cs
 }
 func (i *ItemBase) GetRenderer() *sdl.Renderer {
 	if i.win == nil {
@@ -174,10 +173,10 @@ func (i *ItemBase) GetRenderer() *sdl.Renderer {
 }
 
 func (i *ItemBase) GetStyle() *Style {
-	if i.style == nil {
+	if i.Style == nil {
 		return i.win.GetStyle()
 	} else {
-		return i.style
+		return i.Style
 	}
 }
 
@@ -185,7 +184,7 @@ func (i *ItemBase) GetLayoutParentFrame() *sdl.Rect { return &i.pframe }
 
 func (i *ItemBase) SetParent(pi Item) { i.parent = pi }
 func (i *ItemBase) GetParent() Item   { return i.parent }
-func (i *ItemBase) SetStyle(s *Style) { i.style = s }
+func (i *ItemBase) SetStyle(s *Style) { i.Style = s }
 func (i *ItemBase) SetName(n string)  { i.name = n }
 func (i *ItemBase) GetName() string   { return i.name }
 
@@ -201,8 +200,8 @@ func (i *ItemBase) SetChanged(c bool) {
 // returnes the "inner" frame of the item where subitems possibly reside.
 func (i *ItemBase) oGetSubFrame() *sdl.Rect {
 	//fmt.Printf("%s: ItemBase.oGetSubFrame()\n", i.GetName())
-	// default is outer frame substracted by defaul spacing
-	return i.MakeInnerFrame(i.GetStyle().spacing)
+	// default is outer frame substracted by defaul Spacing
+	return i.MakeInnerFrame(i.GetStyle().Spacing)
 }
 
 func (i *ItemBase) setRootWindow(rw *RootWindow) {
@@ -212,8 +211,8 @@ func (i *ItemBase) setRootWindow(rw *RootWindow) {
 	i.win = rw
 
 	// get style of root window if not set
-	if (i.win.style != nil) && (i.style == nil) {
-		i.style = i.win.style
+	if (i.win.Style != nil) && (i.Style == nil) {
+		i.Style = i.win.Style
 	}
 }
 
@@ -240,7 +239,7 @@ func (i *ItemBase) Render() {
 // Render() renders the item in its outerFrame. It must not change the outerFrame
 func (i *ItemBase) oRender() {
 	// reder a red box if nothing else is set for the item
-	utilRenderSolidBorder(i.GetRenderer(), i.GetFrame(), i.GetStyle().colorRed)
+	utilRenderSolidBorder(i.GetRenderer(), i.GetFrame(), i.GetStyle().ColorRed)
 }
 
 // Waits for a certain time and calls the items oNotifyTimer function

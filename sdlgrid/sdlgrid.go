@@ -65,16 +65,16 @@ const (
 	ITEM_STATE_BACKGROUND = -1
 )
 
-type layoutParam struct {
+type LayoutParam struct {
 	S int32
 	V int32
 }
 
-type layoutSpec struct {
-	X layoutParam
-	Y layoutParam
-	W layoutParam
-	H layoutParam
+type LayoutSpec struct {
+	X LayoutParam
+	Y LayoutParam
+	W LayoutParam
+	H LayoutParam
 }
 
 type infraItemList struct {

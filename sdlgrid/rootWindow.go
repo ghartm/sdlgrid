@@ -14,7 +14,7 @@ type RootWindow struct {
 	sizeY          int32
 	Window         *sdl.Window
 	Renderer       *sdl.Renderer
-	style          *Style
+	Style          *Style
 	RootItems      infraItemList
 	mouseFocusItem Item
 	mouseFocusLock bool
@@ -34,7 +34,7 @@ func NewRootWindow(s *Style, title string, x int32, y int32) *RootWindow {
 	w.sizeX = x
 	w.sizeY = y
 	w.title = title
-	w.style = s
+	w.Style = s
 
 	var err error
 
@@ -74,8 +74,8 @@ func (w *RootWindow) SetMouseFocusLock(b bool) {
 func (w *RootWindow) GetChanged() bool  { return w.changed }
 func (w *RootWindow) SetChanged(c bool) { w.changed = c }
 
-func (w *RootWindow) GetStyle() *Style  { return w.style }
-func (w *RootWindow) SetStyle(s *Style) { w.style = s }
+func (w *RootWindow) GetStyle() *Style  { return w.Style }
+func (w *RootWindow) SetStyle(s *Style) { w.Style = s }
 
 func (w *RootWindow) AddRootItem(i Item) Item {
 	w.RootItems.AddItem(i) // add to content
@@ -171,13 +171,13 @@ func (w *RootWindow) GetFrame() *sdl.Rect {
 func (w *RootWindow) RenderAll() {
 	//fmt.Printf("RootWindow.RenderAll() \n")
 
-	utilRendererSetDrawColor(w.Renderer, &w.style.csDefault.baseDark)
+	utilRendererSetDrawColor(w.Renderer, &w.Style.csDefault.baseDark)
 	w.Renderer.Clear()
 
 	// render from bootom to top
 
 	for _, ri := range w.RootItems.GetList() {
-		//utilRendererSetDrawColor(w.Renderer, w.style.colorBlack)
+		//utilRendererSetDrawColor(w.Renderer, w.Style.colorBlack)
 		//w.Renderer.FillRect(ri.GetFrame())
 		ri.Render()
 	}

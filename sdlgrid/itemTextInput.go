@@ -33,16 +33,16 @@ func NewItemTextInput(win *RootWindow, width int32) *ItemTextInput {
 	i.o = Item(i)
 	i.setRootWindow(win)
 
-	i.SetSpec(LS_POS_PCT, LS_POS_PCT, LS_SIZE_ABS, LS_SIZE_ABS, 0, 0, width, (i.style.spacing*2 + i.style.averageFontHight))
+	i.SetSpec(LS_POS_PCT, LS_POS_PCT, LS_SIZE_ABS, LS_SIZE_ABS, 0, 0, width, (i.Style.Spacing*2 + i.Style.averageFontHight))
 	i.active = false
 	i.textAlign = ITEM_TEXTINPUT_ALIGN_LEFT
 
 	i.textBox = NewItemText(win)
 	i.textBox.SetName(i.name + ".textBox")
 
-	i.cursorRect.Y = i.style.spacing
+	i.cursorRect.Y = i.Style.Spacing
 	i.cursorRect.W = 1
-	i.cursorRect.H = i.style.averageFontHight
+	i.cursorRect.H = i.Style.averageFontHight
 
 	i.SetCursor(sdl.SYSTEM_CURSOR_IBEAM)
 
@@ -100,12 +100,12 @@ func (i *ItemTextInput) insertRune(pos int, r rune) {
 	// shift tail by one position to the right  copy(dst,src)
 	copy(i.cursorPosition[pos+2:], i.cursorPosition[pos+1:])
 	// insert the new position right of the inserted rune
-	i.cursorPosition[pos+1] = i.style.GetTextLen(string(i.text[:pos+1]))
+	i.cursorPosition[pos+1] = i.Style.GetTextLen(string(i.text[:pos+1]))
 
 	// if it was an insert, not an append
 	if pos < len(i.cursorPosition)-2 {
 		//compute positional change of all right shifted
-		dif := i.style.GetTextLen(string(i.text[:pos+2])) - i.cursorPosition[pos+2]
+		dif := i.Style.GetTextLen(string(i.text[:pos+2])) - i.cursorPosition[pos+2]
 		// correct all right shifted by the difference that was caused by the insert
 		l := len(i.cursorPosition)
 		for n := pos + 2; n < l; n++ {
@@ -129,7 +129,7 @@ func (i *ItemTextInput) removeRune(pos int) {
 	if pos < len(i.cursorPosition)-1 {
 		oldpos := i.cursorPosition[pos+1]
 		// update the new position right of the removed one
-		i.cursorPosition[pos+1] = i.style.GetTextLen(string(i.text[:pos+1]))
+		i.cursorPosition[pos+1] = i.Style.GetTextLen(string(i.text[:pos+1]))
 		//compute positional change of all shifted
 		dif := i.cursorPosition[pos+1] - oldpos
 		// correct all left shifted by the difference that was caused by the insert
@@ -290,9 +290,9 @@ func (i *ItemTextInput) computeCursorPositions() {
 
 	//record positions between each rune. 0=pos1 l+1=end
 	for n := range i.text {
-		i.cursorPosition[n] = i.style.GetTextLen(string(i.text[:n]))
+		i.cursorPosition[n] = i.Style.GetTextLen(string(i.text[:n]))
 	}
-	i.cursorPosition[l] = i.style.GetTextLen(string(i.text[:]))
+	i.cursorPosition[l] = i.Style.GetTextLen(string(i.text[:]))
 
 	// make cursor position array same size as Text +1
 	i.cursorPosition = i.cursorPosition[:l+1]
@@ -383,7 +383,7 @@ func (i *ItemTextInput) oNotifyTimer() {
 		i.cursorVisible = true
 	}
 	if i.active {
-		i.SetTimer(i.style.cursorBlinkRate)
+		i.SetTimer(i.Style.cursorBlinkRate)
 	}
 	i.SetChanged(true)
 }
@@ -456,7 +456,7 @@ func (i *ItemTextInput) oNotifyKbFocusGained() {
 	sdl.StartTextInput()
 	// start cursor timer
 	i.cursorVisible = true
-	i.SetTimer(i.style.cursorBlinkRate)
+	i.SetTimer(i.Style.cursorBlinkRate)
 	i.SetChanged(true)
 }
 func (i *ItemTextInput) oNotifyKbFocusLost() {

@@ -112,7 +112,7 @@ func (i *ItemHandle) oRender() {
 	//fmt.Printf("%s: ItemHandle.oRender()\n", i.GetName())
 	r := i.GetRenderer()
 
-	//utilRenderSolidBorder(r, &i.iframe, i.GetStyle().colorPurple)
+	//utilRenderSolidBorder(r, &i.iframe, i.GetStyle().ColorPurple)
 
 	switch i.handleStyle {
 	case ITEM_HANDLE_STYLE_DARKEDGE:

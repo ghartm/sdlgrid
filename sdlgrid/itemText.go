@@ -31,7 +31,7 @@ func (i *ItemText) oRender() {
 	//fmt.Printf("%s: ItemText.oRender()\n", i.GetName())
 	r := i.GetRenderer()
 
-	//utilRenderSolidBorder(r, &i.iframe, i.style.colorPurple)
+	//utilRenderSolidBorder(r, &i.iframe, i.Style.ColorPurple)
 
 	if i.textTexture != nil {
 		if i.textureColor.Uint32() != i.GetColorScheme().text.Uint32() {
@@ -64,7 +64,7 @@ func (i *ItemText) prepareTexture() {
 			} else {
 				i.textureColor = i.GetColorScheme().text
 			}
-			sfc, err := i.style.Font.RenderUTF8Blended(i.text, i.textureColor)
+			sfc, err := i.Style.Font.RenderUTF8Blended(i.text, i.textureColor)
 			//surface, _ := f.RenderUTF8Shaded(t, *c)
 			if err != nil {
 				panic(err)

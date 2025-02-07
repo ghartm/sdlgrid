@@ -48,7 +48,7 @@ func NewItemSlider(win *RootWindow, sl int) *ItemSlider {
 	i.handle.SetTargetCb(i.handleMoveCb)
 	i.handle.SetItemStyle(ITEM_HANDLE_STYLE_FLAT)
 
-	size := win.GetStyle().decoUnit
+	size := win.GetStyle().DecoUnit
 	i.userUnit = size
 
 	if i.sliderStyle == ITEM_SLIDER_STYLE_HORIZONTAL {
@@ -58,13 +58,13 @@ func NewItemSlider(win *RootWindow, sl int) *ItemSlider {
 
 		n := i.rootGrid.AppendColumn()
 		i.rootGrid.SetSubItem(n, 0, i.downRightButton)
-		i.rootGrid.SetColSpec(n, layoutParam{LS_SIZE_COLLAPSE, 0})
+		i.rootGrid.SetColSpec(n, LayoutParam{LS_SIZE_COLLAPSE, 0})
 		n = i.rootGrid.AppendColumn()
 		i.rootGrid.SetSubItem(n, 0, i.handle)
-		i.rootGrid.SetColSpec(n, layoutParam{LS_SIZE_PCT, 100000})
+		i.rootGrid.SetColSpec(n, LayoutParam{LS_SIZE_PCT, 100000})
 		n = i.rootGrid.AppendColumn()
 		i.rootGrid.SetSubItem(n, 0, i.downRightButton)
-		i.rootGrid.SetColSpec(n, layoutParam{LS_SIZE_COLLAPSE, 0})
+		i.rootGrid.SetColSpec(n, LayoutParam{LS_SIZE_COLLAPSE, 0})
 	} else {
 		i.upLeftButton.SetSpec(LS_POS_PCT, LS_POS_PCT, LS_SIZE_PCT, LS_SIZE_ABS, 0, 0, 100000, size)
 		i.downRightButton.SetSpec(LS_POS_PCT, LS_POS_PCT, LS_SIZE_PCT, LS_SIZE_ABS, 0, 100000, 100000, size)
@@ -72,13 +72,13 @@ func NewItemSlider(win *RootWindow, sl int) *ItemSlider {
 
 		n := i.rootGrid.AppendRow()
 		i.rootGrid.SetSubItem(0, n, i.upLeftButton)
-		i.rootGrid.SetRowSpec(n, layoutParam{LS_SIZE_COLLAPSE, 0})
+		i.rootGrid.SetRowSpec(n, LayoutParam{LS_SIZE_COLLAPSE, 0})
 		n = i.rootGrid.AppendRow()
 		i.rootGrid.SetSubItem(0, n, i.handle)
-		i.rootGrid.SetRowSpec(n, layoutParam{LS_SIZE_PCT, 100000})
+		i.rootGrid.SetRowSpec(n, LayoutParam{LS_SIZE_PCT, 100000})
 		n = i.rootGrid.AppendRow()
 		i.rootGrid.SetSubItem(0, n, i.downRightButton)
-		i.rootGrid.SetRowSpec(n, layoutParam{LS_SIZE_COLLAPSE, 0})
+		i.rootGrid.SetRowSpec(n, LayoutParam{LS_SIZE_COLLAPSE, 0})
 	}
 	return i
 }
@@ -94,7 +94,7 @@ func (i *ItemSlider) computeUnitSize() {
 	}
 	i.userTotalPerPx = float32(i.userTotal) / float32(pix)
 
-	s := i.GetStyle().decoUnit
+	s := i.GetStyle().DecoUnit
 	if i.handleSize = int32(float32(i.userView) / i.userTotalPerPx); i.handleSize < s {
 		i.handleSize = s
 	}

@@ -18,7 +18,7 @@ func NewItemBackground(win *RootWindow) *ItemBackground {
 	i.o = Item(i)
 	i.setRootWindow(win)
 	i.SetSpec(LS_POS_PCT, LS_POS_PCT, LS_SIZE_PCT, LS_SIZE_PCT, 0, 0, 100000, 100000)
-	//i.margin=win.style.spacing
+	//i.margin=win.Style.Spacing
 	return i
 }
 

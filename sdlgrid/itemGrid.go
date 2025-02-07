@@ -12,10 +12,10 @@ type ItemGrid struct {
 	ItemBase
 	cols                int
 	rows                int
-	spacing             int32
+	Spacing             int32
 	grid                [][]Item // addressed by (column;row)
-	rowSpec             []layoutParam
-	colSpec             []layoutParam
+	rowSpec             []LayoutParam
+	colSpec             []LayoutParam
 	lastFoundSubItemCol int
 	lastFoundSubItemRow int
 	buttonCallback      func(int32, int32, uint8, uint8) //x, y int32, button, state uint8
@@ -30,8 +30,8 @@ func NewItemGrid(win *RootWindow, cols int, rows int) *ItemGrid {
 	i.cols = cols
 	i.rows = rows
 
-	i.rowSpec = make([]layoutParam, i.rows)
-	i.colSpec = make([]layoutParam, i.cols)
+	i.rowSpec = make([]LayoutParam, i.rows)
+	i.colSpec = make([]LayoutParam, i.cols)
 	i.grid = make([][]Item, i.cols)
 
 	var c, r int
@@ -43,16 +43,16 @@ func NewItemGrid(win *RootWindow, cols int, rows int) *ItemGrid {
 	// default is to collapse all but the last
 	if i.cols > 0 {
 		for c = 0; c < i.cols-1; c++ {
-			i.colSpec[c] = layoutParam{LS_SIZE_COLLAPSE, 0}
+			i.colSpec[c] = LayoutParam{LS_SIZE_COLLAPSE, 0}
 		}
-		i.colSpec[c] = layoutParam{LS_SIZE_PCT, 100000}
+		i.colSpec[c] = LayoutParam{LS_SIZE_PCT, 100000}
 	}
 	if i.rows > 0 {
 		for r = 0; r < i.rows-1; r++ {
-			i.rowSpec[r] = layoutParam{LS_SIZE_COLLAPSE, 0}
+			i.rowSpec[r] = LayoutParam{LS_SIZE_COLLAPSE, 0}
 
 		}
-		i.rowSpec[r] = layoutParam{LS_SIZE_PCT, 100000}
+		i.rowSpec[r] = LayoutParam{LS_SIZE_PCT, 100000}
 
 	}
 
@@ -73,16 +73,16 @@ func (i *ItemGrid) oNotifyMouseButton(x, y int32, button uint8, state uint8) {
 func (i *ItemGrid) AppendColumn() int {
 	i.grid = append(i.grid, make([]Item, i.rows))
 
-	i.colSpec = append(i.colSpec, layoutParam{LS_SIZE_PCT, 100000})
+	i.colSpec = append(i.colSpec, LayoutParam{LS_SIZE_PCT, 100000})
 	i.cols = len(i.colSpec)
 	if i.cols > 1 {
-		i.colSpec[i.cols-1] = layoutParam{LS_SIZE_COLLAPSE, 0}
+		i.colSpec[i.cols-1] = LayoutParam{LS_SIZE_COLLAPSE, 0}
 	}
 
 	// if it was the first column add a row as well
 	if i.cols == 1 {
 		i.grid[i.cols-1] = append(i.grid[i.cols-1], nil)
-		i.rowSpec = append(i.rowSpec, layoutParam{LS_SIZE_PCT, 100000})
+		i.rowSpec = append(i.rowSpec, LayoutParam{LS_SIZE_PCT, 100000})
 		i.rows = len(i.rowSpec)
 	}
 
@@ -101,31 +101,31 @@ func (i *ItemGrid) AppendRow() int {
 		for n := range i.grid {
 			i.grid[n] = append(i.grid[n], nil)
 		}
-		i.rowSpec = append(i.rowSpec, layoutParam{LS_SIZE_PCT, 100000})
+		i.rowSpec = append(i.rowSpec, LayoutParam{LS_SIZE_PCT, 100000})
 	}
 
 	i.rows = len(i.rowSpec)
 	if i.rows > 1 {
-		i.rowSpec[i.rows-1] = layoutParam{LS_SIZE_COLLAPSE, 0}
+		i.rowSpec[i.rows-1] = LayoutParam{LS_SIZE_COLLAPSE, 0}
 	}
 
 	return i.rows - 1
 }
 
-// set the inner spacing between the cells
+// set the inner Spacing between the cells
 func (i *ItemGrid) SetSpacing(spc int32) {
-	i.spacing = spc
+	i.Spacing = spc
 	i.useTmpMinSize = false
 }
 
 // set the horizontal layout spec for a column
-func (i *ItemGrid) SetColSpec(col int, p layoutParam) {
+func (i *ItemGrid) SetColSpec(col int, p LayoutParam) {
 	i.colSpec[col] = p
 	i.useTmpMinSize = false
 }
 
 // set the vertical layout spec for a row
-func (i *ItemGrid) SetRowSpec(row int, p layoutParam) {
+func (i *ItemGrid) SetRowSpec(row int, p LayoutParam) {
 	i.rowSpec[row] = p
 	i.useTmpMinSize = false
 }
@@ -208,7 +208,7 @@ func (i *ItemGrid) oNotifyPostLayout(sizeChanged bool) {
 		}
 	}
 	// if there is space for distribution and percentage layout exists
-	if free := (i.iframe.W - (sum + (i.spacing * int32(i.cols-1)))); free > 0 && npct > 0 {
+	if free := (i.iframe.W - (sum + (i.Spacing * int32(i.cols-1)))); free > 0 && npct > 0 {
 		for n := 0; n < i.cols; n++ {
 			if i.colSpec[n].S == LS_SIZE_PCT {
 				// normalize percentages
@@ -230,7 +230,7 @@ func (i *ItemGrid) oNotifyPostLayout(sizeChanged bool) {
 	}
 
 	// if there is space for distribution and percentage layout exists
-	if free := (i.iframe.H - (sum + (i.spacing * int32(i.rows-1)))); free > 0 && npct > 0 {
+	if free := (i.iframe.H - (sum + (i.Spacing * int32(i.rows-1)))); free > 0 && npct > 0 {
 		for n := 0; n < i.rows; n++ {
 			if i.rowSpec[n].S == LS_SIZE_PCT {
 				// normalize percentages
@@ -250,9 +250,9 @@ func (i *ItemGrid) oNotifyPostLayout(sizeChanged bool) {
 			if i.grid[c][r] != nil {
 				i.grid[c][r].Layout(&pf, sizeChanged)
 			}
-			pf.Y += rh[r] + i.spacing
+			pf.Y += rh[r] + i.Spacing
 		}
-		pf.X += cw[c] + i.spacing
+		pf.X += cw[c] + i.Spacing
 	}
 }
 
@@ -306,8 +306,8 @@ func (i *ItemGrid) oGetMinSize() (int32, int32) {
 			for r := 0; r < i.rows; r++ {
 				rhsum += rh[r]
 			}
-			i.minw = cwsum + (i.spacing * int32(i.cols-1))
-			i.minh = rhsum + (i.spacing * int32(i.rows-1))
+			i.minw = cwsum + (i.Spacing * int32(i.cols-1))
+			i.minh = rhsum + (i.Spacing * int32(i.rows-1))
 			fmt.Printf("%s: ItemGrid.oGetMinSize() w:%d h:%d\n", i.GetName(), i.minw, i.minh)
 		}
 		i.useTmpMinSize = true
@@ -323,7 +323,7 @@ func (i *ItemGrid) oRender() {
 	rd := i.GetRenderer()
 	s := i.GetStyle()
 	rd.SetDrawBlendMode(sdl.BLENDMODE_NONE)
-	utilRenderSolidBorder(rd, &i.iframe, s.colorRed)
+	utilRenderSolidBorder(rd, &i.iframe, s.ColorRed)
 	*/
 
 	// forward to content

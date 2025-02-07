@@ -12,7 +12,7 @@ type ItemLayerBox struct {
 	ItemBase
 	subItems       infraItemList
 	buttonCallback func(int32, int32, uint8, uint8) //x, y int32, button uint8, state uint8
-	//spacing        int32
+	//Spacing        int32
 }
 
 func NewItemLayerBox(win *RootWindow) *ItemLayerBox {
@@ -36,7 +36,7 @@ func (i *ItemLayerBox) oRender() {
 
 	/* // debug
 	r := i.GetRenderer()
-	utilRenderSolidBorder( Border(r, &i.iframe, i.GetStyle().colorPurple)
+	utilRenderSolidBorder( Border(r, &i.iframe, i.GetStyle().ColorPurple)
 	*/
 
 	for _, si := range i.subItems.GetList() {

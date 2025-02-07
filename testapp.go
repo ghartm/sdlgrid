@@ -23,7 +23,7 @@ func newTestWindow(win *sdlgrid.RootWindow) *sdlgrid.ItemWindow {
 	frm11 := sdlgrid.NewItemFrame(win)
 	rg.SetSubItem(rg.AppendColumn(), 0, frm11)
 
-	rg.SetColSpec(0, layoutParam{sdlgrid.LS_SIZE_ABS, win.GetStyle().decoUnit})
+	rg.SetColSpec(0, sdlgrid.LayoutParam{S: sdlgrid.LS_SIZE_ABS, V: win.GetStyle().DecoUnit})
 
 	frm11.SetName("wFrame")
 	frm11.SetText("wFrame")
@@ -31,10 +31,10 @@ func newTestWindow(win *sdlgrid.RootWindow) *sdlgrid.ItemWindow {
 
 	gr3 := sdlgrid.NewItemGrid(win, 0, 0)
 	gr3.SetName("wGrid")
-	gr3.SetSpacing(win.style.spacing)
+	gr3.SetSpacing(win.Style.Spacing)
 	frm11.SetSubItem(gr3)
 
-	ti1 := sdlgrid.NewItemTextInput(win, win.style.averageRuneWidth*20)
+	ti1 := sdlgrid.NewItemTextInput(win, win.Style.EstimateTextLength(20))
 	ti1.SetName("textInput1")
 
 	ti2 := sdlgrid.NewItemTextInput(win, 80)
@@ -46,23 +46,34 @@ func newTestWindow(win *sdlgrid.RootWindow) *sdlgrid.ItemWindow {
 	gr3.SetSubItem(0, gr3.AppendRow(), b1)
 	b1.SetName("firstButton")
 	b1.SetText("Change Alignment")
+	var aligntoggle int = 1
 	b1.SetCallback(func() {
 		fmt.Printf("Button Callback: %s\n", b1.GetName())
-		ti1.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_CENTER)
-		ti2.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_RIGHT)
+		if aligntoggle == 0 {
+			ti1.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_LEFT)
+			ti2.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_LEFT)
+		} else if aligntoggle == 1 {
+			ti1.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_CENTER)
+			ti2.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_CENTER)
+		} else if aligntoggle == 2 {
+			ti1.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_RIGHT)
+			ti2.SetTextAlignment(sdlgrid.ITEM_TEXTINPUT_ALIGN_RIGHT)
+		}
+
+		aligntoggle = (aligntoggle + 1) % 3
 	})
 
 	b1 = sdlgrid.NewItemButton(win)
 	gr3.SetSubItem(0, gr3.AppendRow(), b1)
 	b1.SetText("toggle Input")
 	b1.SetCallback(func() {
-		ti1.SetHidden(!ti1.hidden)
-		ti2.SetHidden(!ti2.hidden)
+		ti1.SetHidden(!ti1.GetHidden())
+		ti2.SetHidden(!ti2.GetHidden())
 	})
 
 	gr4 := sdlgrid.NewItemGrid(win, 0, 0)
 	gr3.SetSubItem(0, gr3.AppendRow(), gr4)
-	gr4.SetSpacing(win.style.spacing)
+	gr4.SetSpacing(win.Style.Spacing)
 
 	lr := sdlgrid.NewItemTextInput(win, 50)
 	gr4.SetSubItem(gr4.AppendColumn(), 0, lr)
@@ -85,10 +96,7 @@ func newTestWindow(win *sdlgrid.RootWindow) *sdlgrid.ItemWindow {
 	b1.SetCallback(func() {
 		ncs := new(sdlgrid.ColorScheme)
 		ncs.SetBaseColor(&sdl.Color{R: uint8(lr.GetNumber()), G: uint8(lg.GetNumber()), B: uint8(lb.GetNumber()), A: 255})
-		win1.oWithItems(func(i sdlgrid.Item) {
-			i.SetColorScheme(ncs)
-			i.SetChanged(true)
-		})
+		win1.ChangeAllColourSchemes(ncs)
 	})
 	return win1
 }
@@ -143,6 +151,8 @@ func main() {
 	wm.AddSubItem(w1)
 
 	win.ReportItems()
+
+	wc.RegisterCustomEventSender(eventSenderCustom)
 	wc.Start()
 
 }
@@ -158,22 +168,6 @@ func eventSenderCustom(wg *sync.WaitGroup, c chan interface{}, ctrl chan bool) {
 			wg.Done()
 		case c <- &e:
 			time.Sleep(time.Duration(1000) * time.Millisecond)
-		}
-	}
-}
-
-func eventSenderTick(wg *sync.WaitGroup, c chan interface{}, ctrl chan bool, msec int) {
-	wg.Add(1)
-	e := sdlgrid.EventRenderTick{msec: msec}
-	var running bool = true
-	for running {
-		select {
-		case _, running = <-ctrl:
-			fmt.Println("quitting eventSenderTick")
-			wg.Done()
-		default:
-			c <- &e
-			time.Sleep(time.Duration(msec) * time.Millisecond)
 		}
 	}
 }

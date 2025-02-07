@@ -73,7 +73,7 @@ func (i *ItemButton) oGetMinSize() (int32, int32) {
 		var w, h, mw, mh int32
 
 		//at least decoration and margin =border
-		mgn := i.GetStyle().spacing
+		mgn := i.GetStyle().Spacing
 
 		if i.textBox != nil {
 			w, h = i.textBox.oGetMinSize()

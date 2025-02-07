@@ -107,12 +107,12 @@ func (i *ItemMenu) AddEntry(e *ItemMenuEntry) {
 	if i.orientation == MENU_ORIENTATION_HORIZONTAL {
 		n := i.AppendColumn()
 		i.SetSubItem(n, 0, Item(e))
-		i.SetColSpec(n, layoutParam{LS_SIZE_COLLAPSE, 0})
+		i.SetColSpec(n, LayoutParam{LS_SIZE_COLLAPSE, 0})
 		e.SetParentMenu(i)
 	} else if i.orientation == MENU_ORIENTATION_VERTICAL {
 		n := i.AppendRow()
 		i.SetSubItem(0, n, Item(e))
-		i.SetRowSpec(n, layoutParam{LS_SIZE_COLLAPSE, 0})
+		i.SetRowSpec(n, LayoutParam{LS_SIZE_COLLAPSE, 0})
 		e.SetParentMenu(i)
 	}
 	e.SetParent(i)

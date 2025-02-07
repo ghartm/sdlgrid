@@ -12,26 +12,28 @@ import (
 type EventCustom interface{}
 
 type EventRenderTick struct {
-	msec int
+	Msec int
 }
 
 type WindowController struct {
-	windows    []*RootWindow
-	ctrl       chan bool
-	queue      chan interface{}
-	waitgroup  *sync.WaitGroup
-	lastId     uint32
-	lastWindow *RootWindow
+	windows     []*RootWindow
+	ctrl        chan bool
+	queue       chan interface{}
+	waitgroup   *sync.WaitGroup
+	lastId      uint32
+	lastWindow  *RootWindow
+	eventFnList []func(*sync.WaitGroup, chan interface{}, chan bool)
 }
 
 func NewWindowController() *WindowController {
-	w := new(WindowController)
+	wc := new(WindowController)
+	wc.eventFnList = make([]func(*sync.WaitGroup, chan interface{}, chan bool), 0)
 
 	if sdl.WasInit(sdl.INIT_VIDEO) != sdl.INIT_VIDEO {
 		sdl.Init(sdl.INIT_VIDEO)
 	}
 
-	return w
+	return wc
 }
 
 func (wc *WindowController) Destroy() {
@@ -70,9 +72,9 @@ func (wc *WindowController) getRootWindowById(id uint32) (bool, *RootWindow) {
 	return false, nil
 }
 
-func (wc *WindowController) eventSenderRenderTick(msec int) {
+func (wc *WindowController) eventSenderRenderTick(ms int) {
 	wc.waitgroup.Add(1)
-	e := EventRenderTick{msec: msec}
+	e := EventRenderTick{Msec: ms}
 	var running bool = true
 runloop:
 	for {
@@ -85,7 +87,7 @@ runloop:
 			}
 		default:
 			wc.queue <- &e
-			time.Sleep(time.Duration(msec) * time.Millisecond)
+			time.Sleep(time.Duration(ms) * time.Millisecond)
 		}
 	}
 }
@@ -109,6 +111,10 @@ runloop:
 	}
 }
 
+func (wc *WindowController) RegisterCustomEventSender(eventfn func(*sync.WaitGroup, chan interface{}, chan bool)) {
+	wc.eventFnList = append(wc.eventFnList, eventfn)
+}
+
 func (wc *WindowController) Start() {
 
 	// layout the windows
@@ -125,9 +131,12 @@ func (wc *WindowController) Start() {
 	go wc.eventSenderSDL()
 	go wc.eventSenderRenderTick(5) // 5 msec = 20frames/sec
 
-	//go wc.eventSenderCustom(&wg, wc.queue, wc.ctrl)
+	for _, efn := range wc.eventFnList {
+		//go wc.eventSenderCustom(&wg, wc.queue, wc.ctrl)
+		go efn(wc.waitgroup, wc.queue, wc.ctrl)
+	}
 
-	//starting the main event processor
+	//starting the main event loop
 	var event interface{}
 queuereader:
 	for event = range wc.queue {
