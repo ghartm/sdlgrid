@@ -2,6 +2,7 @@ package sdlgrid
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 	"time"
 
@@ -106,7 +107,9 @@ runloop:
 				wc.waitgroup.Done()
 				break runloop
 			}
-		case wc.queue <- sdl.WaitEventTimeout(10): // wait here until an sdl-event arives. pick one.
+		case wc.queue <- sdl.WaitEventTimeout(200): // wait here until an sdl-event arives. pick one.
+			// if timeout occurs no event will be returned but "nil" - the main loop needs to compensate for nil events.
+			// As long as WaitEventTimeout blocks, the wc.ctrl channel can not be read and will block exits.
 		}
 	}
 }
@@ -129,7 +132,7 @@ func (wc *WindowController) Start() {
 
 	// starting the event senders
 	go wc.eventSenderSDL()
-	go wc.eventSenderRenderTick(5) // 5 msec = 20frames/sec
+	go wc.eventSenderRenderTick(50) // 50 msec = 20frames/sec
 
 	for _, efn := range wc.eventFnList {
 		//go wc.eventSenderCustom(&wg, wc.queue, wc.ctrl)
@@ -138,19 +141,32 @@ func (wc *WindowController) Start() {
 
 	//starting the main event loop
 	var event interface{}
+	var channelreads int = 0
+	var defaultreads int = 0
+	var nilreads int = 0
+
 queuereader:
 	for event = range wc.queue {
+		channelreads++
+		//fmt.Printf("event: Type: %T \n", event)
+
 		switch t := event.(type) {
+		case nil:
+			nilreads++
 		case *EventRenderTick:
 			// render windows that have changed
 			for _, w := range wc.windows {
 				if w.GetChanged() {
+					fmt.Printf("EventRenderTick + Window changed. window:%d\n", w.id)
 					w.RenderAll()
 					w.Present()
 				}
 			}
 		case *EventCustom:
-			fmt.Println("Custom event!")
+			fmt.Printf("Custom event! channelreads:%d/s, defaultreads: %d/s nilreads: %d/s\n", channelreads, defaultreads, nilreads)
+			channelreads = 0
+			defaultreads = 0
+			nilreads = 0
 		case *sdl.QuitEvent:
 			close(wc.ctrl)
 			break queuereader
@@ -197,6 +213,9 @@ queuereader:
 		case *sdl.TouchFingerEvent:
 		case *sdl.UserEvent:
 			fmt.Printf("[%d ms] UserEvent\ttype:%d\n", t.Timestamp, t.Type)
+		default:
+			defaultreads++
+			fmt.Println("default event: Type:", reflect.TypeOf(event).String())
 		}
 	}
 

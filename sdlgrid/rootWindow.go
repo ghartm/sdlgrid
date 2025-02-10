@@ -289,7 +289,6 @@ func (w *RootWindow) handleWindowEvent(t *sdl.WindowEvent) {
 	case sdl.WINDOWEVENT_FOCUS_LOST:
 		fmt.Printf("Window %d lost keyboard focus\n", t.WindowID)
 	//case sdl.WINDOWEVENT_CLOSE:	 // CLOSE is handled by the window controller
-	//fmt.Printf("Window %d closed\n", t.WindowID)
 	case sdl.WINDOWEVENT_TAKE_FOCUS:
 		fmt.Printf("Window %d is offered a focus\n", t.WindowID)
 	case sdl.WINDOWEVENT_HIT_TEST:

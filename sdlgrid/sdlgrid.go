@@ -5,6 +5,7 @@
 // TODO: getminsize prüfen. bei absoluter positionierung auch die Position der subitems einbeziehen
 // TODO: TextInput textmarkierung mit tastatur und maus
 // TODO: Standard Icon set für menuepfeile und schliessen minimieren vergroessern
+// TODO: ItemGrid.SetSubItem: Prüfe, ob item bereits im Grid eingetragen ist. Ein Item darf nicht mehrfach referenziert werden.
 
 package sdlgrid
 

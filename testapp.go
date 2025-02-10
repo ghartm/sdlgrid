@@ -9,7 +9,43 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-func newTestWindow(win *sdlgrid.RootWindow) *sdlgrid.ItemWindow {
+func newTestWindow2(win *sdlgrid.RootWindow) *sdlgrid.ItemWindow {
+	win1 := sdlgrid.NewItemWindow(win)
+	win1.SetSpec(sdlgrid.LS_POS_PCT, sdlgrid.LS_POS_PCT, sdlgrid.LS_SIZE_COLLAPSE, sdlgrid.LS_SIZE_COLLAPSE, 20000, 20000, 0, 0)
+	rg := sdlgrid.NewItemGrid(win, 0, 0)
+	rg.SetSpacing(win.Style.Spacing)
+
+	win1.AddSubItem(rg)
+
+	//r1 := rg.AppendRow()
+	//r2 := rg.AppendRow()
+
+	c := rg.AppendColumn()
+	rg.SetColSpec(c, sdlgrid.LayoutParam{S: sdlgrid.LS_SIZE_PCT, V: 100000})
+	rg.SetSubItem(c, 0, sdlgrid.NewItemFrame(win).SetText("frame0"))
+	r1 := rg.AppendRow()
+	rg.SetRowSpec(r1, sdlgrid.LayoutParam{S: sdlgrid.LS_SIZE_PCT, V: 100000})
+	rg.SetSubItem(c, r1, sdlgrid.NewItemFrame(win).SetText("frame1"))
+	r2 := rg.AppendRow()
+	rg.SetRowSpec(r2, sdlgrid.LayoutParam{S: sdlgrid.LS_SIZE_PCT, V: 100000})
+	rg.SetSubItem(c, r2, sdlgrid.NewItemFrame(win).SetText("frame2"))
+
+	c = rg.AppendColumn()
+	rg.SetColSpec(c, sdlgrid.LayoutParam{S: sdlgrid.LS_SIZE_PCT, V: 100000})
+	rg.SetSubItem(c, 0, sdlgrid.NewItemFrame(win).SetText("frame3"))
+	rg.SetSubItem(c, r1, sdlgrid.NewItemFrame(win).SetText("frame4"))
+	rg.SetSubItem(c, r2, sdlgrid.NewItemFrame(win).SetText("frame5"))
+
+	c = rg.AppendColumn()
+	rg.SetColSpec(c, sdlgrid.LayoutParam{S: sdlgrid.LS_SIZE_PCT, V: 100000})
+	rg.SetSubItem(c, 0, sdlgrid.NewItemFrame(win).SetText("frame6"))
+	rg.SetSubItem(c, r1, sdlgrid.NewItemFrame(win).SetText("frame7"))
+	rg.SetSubItem(c, r2, sdlgrid.NewItemFrame(win).SetText("frame8"))
+
+	return win1
+}
+
+func newTestWindow1(win *sdlgrid.RootWindow) *sdlgrid.ItemWindow {
 	// Window
 	win1 := sdlgrid.NewItemWindow(win)
 	win1.SetSpec(sdlgrid.LS_POS_PCT, sdlgrid.LS_POS_PCT, sdlgrid.LS_SIZE_PCT, sdlgrid.LS_SIZE_COLLAPSE, 20000, 50000, 50000, 0)
@@ -142,12 +178,17 @@ func main() {
 
 	mu3 := sdlgrid.NewItemMenue(win)
 	mu1.AddNewMenuEntry("Window", mu3, nil)
-	mu3.AddNewMenuEntry("New", nil, func() {
-		wm.AddSubItem(newTestWindow(win))
+	mu3.AddNewMenuEntry("New 1", nil, func() {
+		wm.AddSubItem(newTestWindow1(win))
 
 	})
+	mu3.AddNewMenuEntry("New 2", nil, func() {
+		wm.AddSubItem(newTestWindow2(win))
 
-	w1 := newTestWindow(win)
+	})
+	mu3.AddNewMenuEntry("SubMenue File >", mu2, nil)
+
+	w1 := newTestWindow1(win)
 	wm.AddSubItem(w1)
 
 	win.ReportItems()
